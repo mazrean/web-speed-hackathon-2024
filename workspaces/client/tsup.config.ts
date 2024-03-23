@@ -54,10 +54,15 @@ export default defineConfig(async (): Promise<Options[]> => {
         '.wasm': 'binary',
       },
       metafile: true,
-      minify: true,
+      minify: 'terser',
       outDir: OUTPUT_DIR,
       platform: 'browser',
       target: ['chrome123'],
+      terserOptions: {
+        compress: {
+          passes: 10,
+        },
+      },
     },
   ];
 });

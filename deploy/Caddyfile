@@ -1,0 +1,11 @@
+http://:8080 {
+  root * /usr/share/caddy
+
+  file_server {
+    precompressed br gzip
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000;"
+  }
+}

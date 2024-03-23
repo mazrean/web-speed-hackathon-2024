@@ -1,4 +1,13 @@
 services:
+  one-poll-client:
+    image: ghcr.io/mazrean/web-speed-hackathon-2024-client:latest
+    container_name: wsh2024-client
+    restart: always
+    expose:
+      - 8080
+    networks:
+      - default
+      - caddy-network
   app:
     image: ghcr.io/mazrean/web-speed-hackathon-2024-server:latest
     container_name: wsh2024-server
