@@ -22,9 +22,15 @@ export default defineConfig(async (): Promise<Options[]> => {
       },
       format: 'cjs',
       metafile: true,
+      minify: process.env['NODE_ENV'] === 'development' ? false : 'terser',
       noExternal: [/@wsh-2024\/.*/],
       outDir: OUTPUT_DIR,
       target: 'node20',
+      terserOptions: {
+        compress: {
+          passes: 10,
+        },
+      },
     },
   ];
 });

@@ -52,6 +52,7 @@
     "@types/uuid": "9.0.7",
     "drizzle-kit": "0.20.9",
     "pkg-dir": "5.0.0",
+    "terser": "5.29.2",
     "tsup": "8.0.1"
   }
 }

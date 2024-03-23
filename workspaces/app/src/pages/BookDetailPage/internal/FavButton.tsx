@@ -1,3 +1,4 @@
+import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import styled from 'styled-components';
 
 import { SvgIcon } from '../../../features/icons/components/SvgIcon';
@@ -28,12 +29,9 @@ export const FavButton: React.FC<Props> = ({ enabled, onClick }) => {
       aria-label={enabled ? 'お気に入りを解除する' : 'お気に入りに追加する'}
       onClick={onClick}
     >
-      <SvgIcon
-        color={enabled ? Color.Favorite : Color.MONO_40}
-        height={24}
-        type={enabled ? 'Favorite' : 'FavoriteBorder'}
-        width={24}
-      />
+      {
+        enabled ? <Favorite height={24} htmlColor={Color.Favorite} width={24} /> : <FavoriteBorder height={24} htmlColor={Color.MONO_40} width={24} />
+      }
     </_Button>
   );
 };
