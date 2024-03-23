@@ -11,7 +11,7 @@ RUN pnpm --filter "@wsh-2024/client" install
 ENV NODE_ENV production
 RUN pnpm --filter "@wsh-2024/client" build
 
-RUN find ./workspaces/client/dist | xargs -I {} sh -c 'gzip -9 -v -k -c {} > {}.gz'
+RUN find -type f ./workspaces/client/dist | xargs -I {} sh -c 'gzip -9 -v -k -c {} > {}.gz'
 
 FROM caddy:2.7.2-alpine
 
