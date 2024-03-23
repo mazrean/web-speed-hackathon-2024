@@ -1,6 +1,7 @@
 {
   "name": "@wsh-2024/server",
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "build": "pnpm run build:clean && pnpm run build:tsup && pnpm run build:copy",
     "build:clean": "rm -rf ./dist",

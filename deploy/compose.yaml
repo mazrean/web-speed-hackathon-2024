@@ -2,8 +2,8 @@ services:
   app:
     image: ghcr.io/mazrean/web-speed-hackathon-2024-server:latest
     container_name: wsh2024-server
-    ports:
-      - '${PORT:-8000}:8000'
+    expose:
+      - 8000
     networks:
       - default
       - caddy-network
