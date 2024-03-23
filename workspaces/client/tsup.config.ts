@@ -54,7 +54,7 @@ export default defineConfig(async (): Promise<Options[]> => {
         '.wasm': 'binary',
       },
       metafile: true,
-      minify: 'terser',
+      minify: process.env['NODE_ENV'] === 'development' ? false : 'terser',
       outDir: OUTPUT_DIR,
       platform: 'browser',
       target: ['chrome123'],
