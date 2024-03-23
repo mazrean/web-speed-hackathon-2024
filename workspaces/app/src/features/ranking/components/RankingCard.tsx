@@ -74,7 +74,7 @@ const RankingCard: React.FC<Props> = ({ book }) => {
         <Flex align="flex-start" gap={Space * 2.5} justify="flex-start">
           {imageUrl != null && (
             <_ImgWrapper>
-              <Image alt={book.name} height={96} objectFit="cover" src={imageUrl} width={96} />
+              <Image alt={book.name} height={96} loading='lazy' objectFit="cover" src={imageUrl} width={96} />
             </_ImgWrapper>
           )}
           <Box width="100%">
@@ -95,6 +95,7 @@ const RankingCard: React.FC<Props> = ({ book }) => {
                   <Image
                     alt={`${book.author.name}のアイコン`}
                     height={32}
+                    loading='lazy'
                     objectFit="cover"
                     src={authorImageUrl}
                     width={32}
