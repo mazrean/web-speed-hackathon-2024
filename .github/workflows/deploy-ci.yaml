@@ -48,7 +48,7 @@ jobs:
     name: Deploy staging
     runs-on: ubuntu-latest
     environment: production
-    needs: [client-image, server-image]
+    needs: [server-image]
     steps:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -71,10 +71,6 @@ jobs:
       - name: Deploy
         env:
           DOCKER_HOST: ssh://${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
-          DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         # V2ではupでエラーが出るので、V1を使う ref:https://github.com/docker/compose/issues/8544
         run: docker-compose up -d
         working-directory: ./deploy
