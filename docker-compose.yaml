@@ -2,9 +2,5 @@ services:
   app:
     build:
       context: .
-    ports:
-      - '${PORT:-8000}:8000'
-    deploy:
-      resources:
-        limits:
-          memory: 512m
+    expose:
+      - '8000'

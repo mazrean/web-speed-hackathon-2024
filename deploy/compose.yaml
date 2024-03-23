@@ -1,0 +1,11 @@
+services:
+  app:
+    image: ghcr.io/mazrean/web-speed-hackathon-2024-server:latest
+    ports:
+      - '${PORT:-8000}:8000'
+    networks:
+      - default
+      - caddy-network
+networks:
+  caddy-network:
+    name: caddy-network
