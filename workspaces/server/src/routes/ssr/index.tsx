@@ -7,9 +7,7 @@ import jsesc from 'jsesc';
 import ReactDOMServer from 'react-dom/server';
 import { StaticRouter } from 'react-router-dom/server';
 import { ServerStyleSheet } from 'styled-components';
-import { unstable_serialize } from 'swr';
 
-import { featureApiClient } from '@wsh-2024/app/src/features/feature/apiClient/featureApiClient';
 //import { rankingApiClient } from '@wsh-2024/app/src/features/ranking/apiClient/rankingApiClient';
 //import { releaseApiClient } from '@wsh-2024/app/src/features/release/apiClient/releaseApiClient';
 import { ClientApp } from '@wsh-2024/app/src/index';
@@ -21,11 +19,6 @@ const app = new Hono();
 
 async function createInjectDataStr(): Promise<Record<string, unknown>> {
   const json: Record<string, unknown> = {};
-
-  {
-    const features = await featureApiClient.fetchList({ query: {} });
-    json[unstable_serialize(featureApiClient.fetchList$$key({ query: {} }))] = features;
-  }
 
   return json;
 }
