@@ -11,6 +11,10 @@ self.addEventListener('activate', (ev: ExtendableEvent) => {
 });
 
 self.addEventListener('fetch', (ev: FetchEvent) => {
+  if (!ev.request.url.includes('format=jxl')) {
+    return;
+  }
+
   ev.respondWith(onFetch(ev.request));
 });
 
