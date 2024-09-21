@@ -12,6 +12,7 @@ import { AuthorDetailPage } from './pages/AuthorDetailPage';
 import { BookDetailPage } from './pages/BookDetailPage';
 import { EpisodeDetailPage } from './pages/EpisodeDetailPage';
 import { SearchPage } from './pages/SearchPage';
+import type { TopPageProp } from './pages/TopPage';
 import { TopPage } from './pages/TopPage';
 
 const _BackToTopButton = styled(Link)`
@@ -23,11 +24,15 @@ const _BackToTopButton = styled(Link)`
   background-color: transparent;
 `;
 
-export const Router: React.FC = () => {
+export type RouterProp = TopPageProp;
+
+export const Router: React.FC<{
+  data: RouterProp;
+}> = ({ data }) => {
   return (
     <Routes>
       <Route element={<CommonLayout />} path={'/'}>
-        <Route element={<TopPage />} path={''} />
+        <Route element={<TopPage data={data} />} path={''} />
       </Route>
       <Route
         element={

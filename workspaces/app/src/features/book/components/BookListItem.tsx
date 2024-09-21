@@ -7,8 +7,8 @@ import { Link } from '../../../foundation/components/Link';
 import { Separator } from '../../../foundation/components/Separator';
 import { Spacer } from '../../../foundation/components/Spacer';
 import { Text } from '../../../foundation/components/Text';
-import { useImage } from '../../../foundation/hooks/useImage';
 import { Color, Radius, Space, Typography } from '../../../foundation/styles/variables';
+import { getImageUrl } from '../../../lib/image/getImageUrl';
 import { useBook } from '../hooks/useBook';
 
 const _Wrapper = styled.li`
@@ -34,7 +34,12 @@ type Props = {
 export const BookListItem: React.FC<Props> = ({ bookId }) => {
   const { data: book } = useBook({ params: { bookId } });
 
-  const imageUrl = useImage({ height: 64, imageId: book.image.id, width: 64 });
+  const imageUrl = getImageUrl({
+    format: 'webp',
+    height: 64,
+    imageId: book.image.id,
+    width: 64,
+  });
 
   return (
     <_Wrapper>

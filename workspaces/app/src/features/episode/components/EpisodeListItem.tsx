@@ -7,8 +7,8 @@ import { Link } from '../../../foundation/components/Link';
 import { Separator } from '../../../foundation/components/Separator';
 import { Spacer } from '../../../foundation/components/Spacer';
 import { Text } from '../../../foundation/components/Text';
-import { useImage } from '../../../foundation/hooks/useImage';
 import { Color, Radius, Space, Typography } from '../../../foundation/styles/variables';
+import { getImageUrl } from '../../../lib/image/getImageUrl';
 import { useEpisode } from '../hooks/useEpisode';
 
 const _Wrapper = styled.li`
@@ -35,7 +35,12 @@ type Props = {
 export const EpisodeListItem: React.FC<Props> = ({ bookId, episodeId }) => {
   const { data: episode } = useEpisode({ params: { episodeId } });
 
-  const imageUrl = useImage({ height: 96, imageId: episode.image.id, width: 96 });
+  const imageUrl = getImageUrl({
+    format: 'webp',
+    height: 96,
+    imageId: episode.image.id,
+    width: 96,
+  });
 
   return (
     <_Wrapper>

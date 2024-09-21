@@ -1,27 +1,74 @@
 import _ from 'lodash';
-import { Suspense, useId } from 'react';
+import { useId } from 'react';
 
 import { BookCard } from '../../features/book/components/BookCard';
 import { FeatureCard } from '../../features/feature/components/FeatureCard';
-import { useFeatureList } from '../../features/feature/hooks/useFeatureList';
 import { RankingCard } from '../../features/ranking/components/RankingCard';
-import { useRankingList } from '../../features/ranking/hooks/useRankingList';
-import { useRelease } from '../../features/release/hooks/useRelease';
 import { Box } from '../../foundation/components/Box';
 import { Flex } from '../../foundation/components/Flex';
 import { Spacer } from '../../foundation/components/Spacer';
 import { Text } from '../../foundation/components/Text';
 import { Color, Space, Typography } from '../../foundation/styles/variables';
-import { getDayOfWeekStr } from '../../lib/date/getDayOfWeekStr';
 
 import { CoverSection } from './internal/CoverSection';
 
-const TopPage: React.FC = () => {
-  const todayStr = getDayOfWeekStr(new Date());
-  const { data: release } = useRelease({ params: { dayOfWeek: todayStr } });
-  const { data: featureList } = useFeatureList({ query: {} });
-  const { data: rankingList } = useRankingList({ query: {} });
+export type TopPageProp = {
+  featureList: {
+    book: {
+      author: {
+        image: {
+          id: string;
+        };
+        name: string;
+      };
+      description: string;
+      id: string;
+      image: {
+        alt: string;
+        id: string;
+      };
+      name: string;
+    };
+    id: string;
+  }[];
+  rankingList: {
+    book: {
+      author: {
+        image: {
+          id: string;
+        };
+        name: string;
+      };
+      description: string;
+      id: string;
+      image: {
+        id: string;
+      };
+      name: string;
+    };
+    id: string;
+  }[];
+  release: {
+    books: {
+      author: {
+        image: {
+          id: string;
+        };
+        name: string;
+      };
+      id: string;
+      image: {
+        alt: string;
+        id: string;
+      };
+      name: string;
+    }[];
+  };
+}
 
+const TopPage: React.FC<{
+  data: TopPageProp;
+}> = ({data: {featureList, rankingList, release}}) => {
   const pickupA11yId = useId();
   const rankingA11yId = useId();
   const todayA11yId = useId();
@@ -40,7 +87,7 @@ const TopPage: React.FC = () => {
           <Box maxWidth="100%" overflowX="scroll" overflowY="hidden">
             <Flex align="stretch" direction="row" gap={Space * 2} justify="flex-start">
               {_.map(featureList, (feature) => (
-                <FeatureCard key={feature.id} bookId={feature.book.id} />
+                <FeatureCard key={feature.id} book={feature.book} />
               ))}
             </Flex>
           </Box>
@@ -56,7 +103,7 @@ const TopPage: React.FC = () => {
           <Box maxWidth="100%" overflowX="hidden" overflowY="hidden">
             <Flex align="center" as="ul" direction="column" justify="center">
               {_.map(rankingList, (ranking) => (
-                <RankingCard key={ranking.id} bookId={ranking.book.id} />
+                <RankingCard key={ranking.id} book={ranking.book} />
               ))}
             </Flex>
           </Box>
@@ -72,7 +119,7 @@ const TopPage: React.FC = () => {
           <Box maxWidth="100%" overflowX="scroll" overflowY="hidden">
             <Flex align="stretch" gap={Space * 2} justify="flex-start">
               {_.map(release.books, (book) => (
-                <BookCard key={book.id} bookId={book.id} />
+                <BookCard key={book.id} book={book} />
               ))}
             </Flex>
           </Box>
@@ -82,12 +129,4 @@ const TopPage: React.FC = () => {
   );
 };
 
-const TopPageWithSuspense: React.FC = () => {
-  return (
-    <Suspense fallback={null}>
-      <TopPage />
-    </Suspense>
-  );
-};
-
-export { TopPageWithSuspense as TopPage };
+export { TopPage };
