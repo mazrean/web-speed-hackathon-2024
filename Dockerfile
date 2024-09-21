@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 FROM node:20.11.1-alpine
 
 WORKDIR /usr/src/app
@@ -12,7 +11,7 @@ ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
 
 COPY . .
 RUN corepack enable pnpm
-RUN --mount=type=cache,target=/usr/src/app/node_modules/.pnpm pnpm install
+RUN pnpm install
 RUN pnpm build
 
 ENV PORT 8000

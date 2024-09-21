@@ -4,7 +4,7 @@
   "scripts": {
     "build": "pnpm run build:clean && pnpm run build:tsup && pnpm run build:copy",
     "build:clean": "rm -rf ./dist",
-    "build:copy": "cp -r ./seeds/images ./dist/images",
+    "build:copy": "cp -r ./seeds/images ./dist/images && cp -r ./seeds/text ./dist/text",
     "build:tsup": "tsup",
     "start": "node ./dist/server.js"
   },
