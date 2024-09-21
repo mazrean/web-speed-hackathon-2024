@@ -3,8 +3,12 @@ import fs from 'node:fs/promises';
 import { Hono } from 'hono';
 
 import { ADMIN_HTML_PATH } from '../../constants/paths';
+import { cacheControlMiddleware } from '../../middlewares/cacheControlMiddleware';
 
 const app = new Hono();
+
+app.use('/admin', cacheControlMiddleware);
+app.use('/admin/*', cacheControlMiddleware);
 
 app.get('/admin', async (c) => {
   const html = await fs.readFile(ADMIN_HTML_PATH, 'utf-8');

@@ -4,3 +4,12 @@ services:
       context: .
     ports:
       - '${PORT:-8000}:8000'
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    ports:
+      - '${PORT:-8080}:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./tmp/nginx/cache:/var/cache/nginx

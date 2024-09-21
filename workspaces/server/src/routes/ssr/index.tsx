@@ -17,9 +17,7 @@ import { INDEX_HTML_PATH } from '../../constants/paths';
 
 const app = new Hono();
 
-async function createData() {
-  const dayOfWeek = getDayOfWeekStr(new Date());
-
+async function createData(dayOfWeek: string) {
   const [release, featureList, rankingList] = await Promise.all([
     releaseApiClient.fetch({ params: { dayOfWeek } }),
     featureApiClient.fetchList({ query: {} }),
@@ -58,8 +56,20 @@ async function createHTML({
 }
 
 app.get('*', async (c) => {
-  const data = await createData();
+  const dayOfWeek = getDayOfWeekStr(new Date());
+  const data = await createData(dayOfWeek);
   const sheet = new ServerStyleSheet();
+
+  switch (c.req.path) {
+  case '/':
+    if (c.req.header()["if-none-match"] === dayOfWeek) {
+      return c.status(304);
+    }
+
+    c.header('Cache-Control', 'public, max-age=3600');
+    c.header('ETag', dayOfWeek);
+    break;
+  }
 
   try {
     const body = ReactDOMServer.renderToString(
