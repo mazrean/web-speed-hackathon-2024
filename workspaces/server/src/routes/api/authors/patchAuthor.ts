@@ -4,6 +4,7 @@ import { PatchAuthorRequestBodySchema } from '@wsh-2024/schema/src/api/authors/P
 import { PatchAuthorRequestParamsSchema } from '@wsh-2024/schema/src/api/authors/PatchAuthorRequestParams';
 import { PatchAuthorResponseSchema } from '@wsh-2024/schema/src/api/authors/PatchAuthorResponse';
 
+import { setAuthorEditDate } from '../../../cache/author';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { authorRepository } from '../../../repositories';
 
@@ -44,6 +45,7 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
+  setAuthorEditDate(params.authorId, new Date());
   return c.json(res.value);
 });
 

@@ -9,6 +9,7 @@ import { ActionLayout } from './foundation/layouts/ActionLayout';
 import { CommonLayout } from './foundation/layouts/CommonLayout';
 import { Color, Space, Typography } from './foundation/styles/variables';
 import { AuthorDetailPage } from './pages/AuthorDetailPage';
+import type { AuthorDetailPageProp } from './pages/AuthorDetailPage';
 import { BookDetailPage } from './pages/BookDetailPage';
 import { EpisodeDetailPage } from './pages/EpisodeDetailPage';
 import { SearchPage } from './pages/SearchPage';
@@ -24,7 +25,7 @@ const _BackToTopButton = styled(Link)`
   background-color: transparent;
 `;
 
-export type RouterProp = TopPageProp;
+export type RouterProp = TopPageProp & AuthorDetailPageProp;
 
 export const Router: React.FC<{
   data: RouterProp;
@@ -51,7 +52,7 @@ export const Router: React.FC<{
       >
         <Route element={<BookDetailPage />} path={'books/:bookId'} />
         <Route element={<EpisodeDetailPage />} path={'books/:bookId/episodes/:episodeId'} />
-        <Route element={<AuthorDetailPage />} path={'authors/:authorId'} />
+        <Route element={<AuthorDetailPage data={data} />} path={'authors/:authorId'} />
         <Route element={<SearchPage />} path={'search'} />
       </Route>
     </Routes>

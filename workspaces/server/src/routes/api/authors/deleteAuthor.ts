@@ -3,6 +3,7 @@ import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { DeleteAuthorRequestParamsSchema } from '@wsh-2024/schema/src/api/authors/DeleteAuthorRequestParams';
 import { DeleteAuthorResponseSchema } from '@wsh-2024/schema/src/api/authors/DeleteAuthorResponse';
 
+import { setAuthorEditDate } from '../../../cache/author';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { authorRepository } from '../../../repositories';
 
@@ -35,6 +36,8 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
+
+  setAuthorEditDate(params.authorId, new Date());
   return c.json(res.value);
 });
 

@@ -9,7 +9,6 @@ import { Spacer } from '../../../foundation/components/Spacer';
 import { Text } from '../../../foundation/components/Text';
 import { Color, Radius, Space, Typography } from '../../../foundation/styles/variables';
 import { getImageUrl } from '../../../lib/image/getImageUrl';
-import { useBook } from '../hooks/useBook';
 
 const _Wrapper = styled.li`
   width: 100%;
@@ -28,12 +27,17 @@ const _ImgWrapper = styled.div`
 `;
 
 type Props = {
-  bookId: string;
+  book: {
+    description: string;
+    id: string;
+    image: {
+      id: string;
+    };
+    name: string;
+  };
 };
 
-export const BookListItem: React.FC<Props> = ({ bookId }) => {
-  const { data: book } = useBook({ params: { bookId } });
-
+export const BookListItem: React.FC<Props> = ({ book }) => {
   const imageUrl = getImageUrl({
     format: 'webp',
     height: 64,

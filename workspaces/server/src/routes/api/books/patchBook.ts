@@ -4,6 +4,7 @@ import { PatchBookRequestBodySchema } from '@wsh-2024/schema/src/api/books/Patch
 import { PatchBookRequestParamsSchema } from '@wsh-2024/schema/src/api/books/PatchBookRequestParams';
 import { PatchBookResponseSchema } from '@wsh-2024/schema/src/api/books/PatchBookResponse';
 
+import { setAuthorEditDate } from '../../../cache/author';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { bookRepository } from '../../../repositories';
 
@@ -44,6 +45,7 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
+  setAuthorEditDate(res.value.author.id, new Date());
   return c.json(res.value);
 });
 

@@ -1,10 +1,6 @@
-import { Suspense, useId } from 'react';
-import { useParams } from 'react-router-dom';
-import type { RouteParams } from 'regexparam';
+import { useId } from 'react';
 import { styled } from 'styled-components';
-import invariant from 'tiny-invariant';
 
-import { useAuthor } from '../../features/author/hooks/useAuthor';
 import { BookListItem } from '../../features/book/components/BookListItem';
 import { Box } from '../../foundation/components/Box';
 import { Flex } from '../../foundation/components/Flex';
@@ -31,11 +27,35 @@ const _AuthorImageWrapper = styled.div`
   }
 `;
 
-const AuthorDetailPage: React.FC = () => {
-  const { authorId } = useParams<RouteParams<'/authors/:authorId'>>();
-  invariant(authorId);
+export type AuthorDetailPageProp = {
+  author?: {
+    books: {
+      description: string;
+      id: string;
+      image: {
+        id: string;
+      };
+      name: string;
+    }[];
+    description: string;
+    id: string;
+    image: {
+      id: string;
+    };
+    name: string;
+  };
+}
 
-  const { data: author } = useAuthor({ params: { authorId } });
+const AuthorDetailPage: React.FC<{
+  data: AuthorDetailPageProp;
+}> = ({data: {
+  author,
+}}) => {
+  const bookListA11yId = useId();
+
+  if (author == null) {
+    return null;
+  }
 
   const imageUrl = getImageUrl({
     format: 'webp',
@@ -43,14 +63,13 @@ const AuthorDetailPage: React.FC = () => {
     imageId: author.image.id,
     width: 128,
   });
-  const bookListA11yId = useId();
 
   return (
     <Box height="100%" px={Space * 2}>
       <_HeadingWrapper aria-label="作者情報">
         {imageUrl != null && (
           <_AuthorImageWrapper>
-            <Image key={author.id} alt={author.name} height={128} objectFit="cover" src={imageUrl} width={128} />
+            <Image key={author.id} alt={author.name} height={128} loading='eager' objectFit="cover" src={imageUrl} width={128} />
           </_AuthorImageWrapper>
         )}
 
@@ -75,7 +94,7 @@ const AuthorDetailPage: React.FC = () => {
 
         <Flex align="center" as="ul" direction="column" justify="center">
           {author.books.map((book) => (
-            <BookListItem key={book.id} bookId={book.id} />
+            <BookListItem key={book.id} book={book} />
           ))}
           {author.books.length === 0 && (
             <>
@@ -91,12 +110,4 @@ const AuthorDetailPage: React.FC = () => {
   );
 };
 
-const AuthorDetailPageWithSuspense: React.FC = () => {
-  return (
-    <Suspense fallback={null}>
-      <AuthorDetailPage />
-    </Suspense>
-  );
-};
-
-export { AuthorDetailPageWithSuspense as AuthorDetailPage };
+export { AuthorDetailPage };
