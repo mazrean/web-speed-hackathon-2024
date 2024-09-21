@@ -4,6 +4,7 @@ import { PatchEpisodeRequestBodySchema } from '@wsh-2024/schema/src/api/episodes
 import { PatchEpisodeRequestParamsSchema } from '@wsh-2024/schema/src/api/episodes/PatchEpisodeRequestParams';
 import { PatchEpisodeResponseSchema } from '@wsh-2024/schema/src/api/episodes/PatchEpisodeResponse';
 
+import { setBookEditDate } from '../../../cache/book';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { episodeRepository } from '../../../repositories';
 
@@ -44,6 +45,7 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
+  setBookEditDate(res.value.book.id, new Date());
   return c.json(res.value);
 });
 

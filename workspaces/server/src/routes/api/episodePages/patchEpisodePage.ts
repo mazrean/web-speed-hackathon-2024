@@ -44,6 +44,7 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
+
   return c.json(res.value);
 });
 

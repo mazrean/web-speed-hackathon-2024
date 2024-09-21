@@ -1,14 +1,6 @@
-import { useAtom } from 'jotai/react';
-import { Suspense, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import type { RouteParams } from 'regexparam';
 import { styled } from 'styled-components';
-import invariant from 'tiny-invariant';
 
-import { FavoriteBookAtomFamily } from '../../features/book/atoms/FavoriteBookAtomFamily';
-import { useBook } from '../../features/book/hooks/useBook';
 import { EpisodeListItem } from '../../features/episode/components/EpisodeListItem';
-import { useEpisodeList } from '../../features/episode/hooks/useEpisodeList';
 import { Box } from '../../foundation/components/Box';
 import { Flex } from '../../foundation/components/Flex';
 import { Image } from '../../foundation/components/Image';
@@ -45,31 +37,46 @@ const _AvatarWrapper = styled.div`
   }
 `;
 
-const BookDetailPage: React.FC = () => {
-  const { bookId } = useParams<RouteParams<'/books/:bookId'>>();
-  invariant(bookId);
+export type BookDetailPageProp = {
+  book: {
+    author: {
+      id: string;
+      image: {
+        id: string;
+      };
+      name: string;
+    };
+    description: string;
+    id: string;
+    image: {
+      id: string;
+    };
+    name: string;
+  };
+  episodeList: {
+    chapter: number;
+    description: string;
+    id: string;
+    image: {
+      id: string;
+    };
+    name: string;
+  }[];
+};
 
-  const { data: book } = useBook({ params: { bookId } });
-  const { data: episodeList } = useEpisodeList({ query: { bookId } });
-
-  const [isFavorite, toggleFavorite] = useAtom(FavoriteBookAtomFamily(bookId));
-
+const BookDetailPage: React.FC<{data:BookDetailPageProp}> = ({ data: { book, episodeList } }) => {
   const bookImageUrl = getImageUrl({
     format: 'webp',
     height: 256,
     imageId: book.image.id,
     width: 192,
   });
-  const auhtorImageUrl = getImageUrl({
+  const authorImageUrl = getImageUrl({
     format: 'webp',
     height: 32,
     imageId: book.author.image.id,
     width: 32,
   });
-
-  const handleFavClick = useCallback(() => {
-    toggleFavorite();
-  }, [toggleFavorite]);
 
   const latestEpisode = episodeList?.find((episode) => episode.chapter === 1);
 
@@ -93,9 +100,9 @@ const BookDetailPage: React.FC = () => {
           <Spacer height={Space * 1} />
 
           <_AuthorWrapper href={`/authors/${book.author.id}`}>
-            {auhtorImageUrl != null && (
+            {authorImageUrl != null && (
               <_AvatarWrapper>
-                <Image alt={book.author.name} height={32} objectFit="cover" src={auhtorImageUrl} width={32} />
+                <Image alt={book.author.name} height={32} objectFit="cover" src={authorImageUrl} width={32} />
               </_AvatarWrapper>
             )}
             <Text color={Color.MONO_100} typography={Typography.NORMAL14}>
@@ -106,10 +113,8 @@ const BookDetailPage: React.FC = () => {
       </_HeadingWrapper>
 
       <BottomNavigator
-        bookId={bookId}
-        isFavorite={isFavorite}
+        bookId={book.id}
         latestEpisodeId={latestEpisode?.id ?? ''}
-        onClickFav={handleFavClick}
       />
 
       <Separator />
@@ -117,7 +122,7 @@ const BookDetailPage: React.FC = () => {
       <section aria-label="エピソード一覧">
         <Flex align="center" as="ul" direction="column" justify="center">
           {episodeList.map((episode) => (
-            <EpisodeListItem key={episode.id} bookId={bookId} episodeId={episode.id} />
+            <EpisodeListItem key={episode.id} bookId={book.id} episode={episode} />
           ))}
           {episodeList.length === 0 && (
             <>
@@ -133,12 +138,4 @@ const BookDetailPage: React.FC = () => {
   );
 };
 
-const BookDetailPageWithSuspense: React.FC = () => {
-  return (
-    <Suspense fallback={null}>
-      <BookDetailPage />
-    </Suspense>
-  );
-};
-
-export { BookDetailPageWithSuspense as BookDetailPage };
+export { BookDetailPage };

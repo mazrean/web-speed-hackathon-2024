@@ -28,7 +28,7 @@ const _AuthorImageWrapper = styled.div`
 `;
 
 export type AuthorDetailPageProp = {
-  author?: {
+  author: {
     books: {
       description: string;
       id: string;

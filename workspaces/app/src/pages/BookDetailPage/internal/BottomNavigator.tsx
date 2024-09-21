@@ -1,7 +1,9 @@
 import { animated, useSpring } from '@react-spring/web';
-import { useCallback } from 'react';
+import { useAtom } from 'jotai/react';
+import { Suspense, useCallback } from 'react';
 import { styled } from 'styled-components';
 
+import { FavoriteBookAtomFamily } from '../../../features/book/atoms/FavoriteBookAtomFamily';
 import { Link } from '../../../foundation/components/Link';
 import { Color, Radius, Space } from '../../../foundation/styles/variables';
 
@@ -37,20 +39,19 @@ const _ReadLink = styled(Link)`
 
 type Props = {
   bookId: string;
-  isFavorite: boolean;
   latestEpisodeId: string;
-  onClickFav: () => void;
 };
 
-export const BottomNavigator: React.FC<Props> = ({ bookId, isFavorite, latestEpisodeId, onClickFav }) => {
+const BottomNavigator: React.FC<Props> = ({ bookId, latestEpisodeId }) => {
   const props = useSpring({
     from: { transform: 'translateY(100%)' },
     to: { transform: 'translateY(0)' },
   });
 
+  const [isFavorite, toggleFavorite] = useAtom(FavoriteBookAtomFamily(bookId));
   const handleFavClick = useCallback(() => {
-    onClickFav();
-  }, [onClickFav]);
+    toggleFavorite();
+  }, [toggleFavorite]);
 
   return (
     <_Wrapper>
@@ -63,3 +64,23 @@ export const BottomNavigator: React.FC<Props> = ({ bookId, isFavorite, latestEpi
     </_Wrapper>
   );
 };
+const BottomNavigatorDummy: React.FC<Props> = () => {
+  return (
+    <_Wrapper>
+      <_Content>
+        <FavButton enabled={false} />
+        <_ReadLink to="/">最新話を読む</_ReadLink>
+      </_Content>
+    </_Wrapper>
+  );
+}
+
+const BottomNavigatorSuspense: React.FC<Props> = (props) => {
+  return (
+    <Suspense fallback={<BottomNavigatorDummy {...props} />}>
+      <BottomNavigator {...props} />
+    </Suspense>
+  );
+}
+
+export { BottomNavigatorSuspense as BottomNavigator };

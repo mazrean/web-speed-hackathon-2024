@@ -4,6 +4,7 @@ import { PostBookRequestBodySchema } from '@wsh-2024/schema/src/api/books/PostBo
 import { PostBookResponseSchema } from '@wsh-2024/schema/src/api/books/PostBookResponse';
 
 import { setAuthorEditDate } from '../../../cache/author';
+import { setBookEditDate } from '../../../cache/book';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { bookRepository } from '../../../repositories';
 
@@ -42,6 +43,8 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
+
+  setBookEditDate(res.value.id, new Date());
   setAuthorEditDate(body.authorId, new Date());
   return c.json(res.value);
 });

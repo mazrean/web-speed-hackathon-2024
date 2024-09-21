@@ -10,6 +10,7 @@ import { CommonLayout } from './foundation/layouts/CommonLayout';
 import { Color, Space, Typography } from './foundation/styles/variables';
 import { AuthorDetailPage } from './pages/AuthorDetailPage';
 import type { AuthorDetailPageProp } from './pages/AuthorDetailPage';
+import type { BookDetailPageProp } from './pages/BookDetailPage';
 import { BookDetailPage } from './pages/BookDetailPage';
 import { EpisodeDetailPage } from './pages/EpisodeDetailPage';
 import { SearchPage } from './pages/SearchPage';
@@ -25,7 +26,11 @@ const _BackToTopButton = styled(Link)`
   background-color: transparent;
 `;
 
-export type RouterProp = TopPageProp & AuthorDetailPageProp;
+export type RouterProp = {
+  authorDetailPage?: AuthorDetailPageProp;
+  bookDetailPage?: BookDetailPageProp;
+  topPage?: TopPageProp;
+};
 
 export const Router: React.FC<{
   data: RouterProp;
@@ -33,7 +38,7 @@ export const Router: React.FC<{
   return (
     <Routes>
       <Route element={<CommonLayout />} path={'/'}>
-        <Route element={<TopPage data={data} />} path={''} />
+        <Route element={data.topPage ? <TopPage data={data.topPage} /> : null} path={''} />
       </Route>
       <Route
         element={
@@ -50,9 +55,9 @@ export const Router: React.FC<{
         }
         path={'/'}
       >
-        <Route element={<BookDetailPage />} path={'books/:bookId'} />
+        <Route element={data.bookDetailPage ? <BookDetailPage data={data.bookDetailPage} /> : null} path={'books/:bookId'} />
         <Route element={<EpisodeDetailPage />} path={'books/:bookId/episodes/:episodeId'} />
-        <Route element={<AuthorDetailPage data={data} />} path={'authors/:authorId'} />
+        <Route element={data.authorDetailPage ? <AuthorDetailPage data={data.authorDetailPage} /> : null} path={'authors/:authorId'} />
         <Route element={<SearchPage />} path={'search'} />
       </Route>
     </Routes>
