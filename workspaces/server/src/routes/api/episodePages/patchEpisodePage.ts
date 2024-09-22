@@ -4,7 +4,6 @@ import { PatchEpisodePageRequestBodySchema } from '@wsh-2024/schema/src/api/epis
 import { PatchEpisodePageRequestParamsSchema } from '@wsh-2024/schema/src/api/episodePages/PatchEpisodePageRequestParams';
 import { PatchEpisodePageResponseSchema } from '@wsh-2024/schema/src/api/episodePages/PatchEpisodePageResponse';
 
-import { setEpisodeEditDate } from '../../../cache/episode';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { episodePageRepository } from '../../../repositories';
 
@@ -45,7 +44,7 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
-  setEpisodeEditDate(body.episodeId ?? '', new Date());
+
   return c.json(res.value);
 });
 

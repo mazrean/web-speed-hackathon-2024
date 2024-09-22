@@ -1,4 +1,11 @@
+import { Suspense } from 'react';
+import { useParams } from 'react-router-dom';
+import type { RouteParams } from 'regexparam';
+import invariant from 'tiny-invariant';
+
 import { EpisodeListItem } from '../../features/episode/components/EpisodeListItem';
+import { useEpisode } from '../../features/episode/hooks/useEpisode';
+import { useEpisodeList } from '../../features/episode/hooks/useEpisodeList';
 import { Box } from '../../foundation/components/Box';
 import { Flex } from '../../foundation/components/Flex';
 import { Separator } from '../../foundation/components/Separator';
@@ -6,23 +13,14 @@ import { Space } from '../../foundation/styles/variables';
 
 import { ComicViewer } from './internal/ComicViewer';
 
-export type EpisodeDetailPageProp = {
-  bookId: string;
-  episode: {
-    id: string;
-  };
-  episodes: {
-    chapter: number;
-    description: string;
-    id: string;
-    image: {
-      id: string;
-    };
-    name: string;
-  }[];
-};
+const EpisodeDetailPage: React.FC = () => {
+  const { bookId, episodeId } = useParams<RouteParams<'/books/:bookId/episodes/:episodeId'>>();
+  invariant(bookId);
+  invariant(episodeId);
 
-const EpisodeDetailPage: React.FC<EpisodeDetailPageProp> = ({bookId, episode, episodes}) => {
+  const { data: episodes } = useEpisodeList({ query: { bookId } });
+  const { data: episode } = useEpisode({ params: { episodeId } });
+
   return (
     <Box>
       <section aria-label="漫画ビューアー">
@@ -42,4 +40,12 @@ const EpisodeDetailPage: React.FC<EpisodeDetailPageProp> = ({bookId, episode, ep
   );
 };
 
-export { EpisodeDetailPage };
+const EpisodeDetailPageWithSuspense: React.FC = () => {
+  return (
+    <Suspense fallback={null}>
+      <EpisodeDetailPage />
+    </Suspense>
+  );
+};
+
+export { EpisodeDetailPageWithSuspense as EpisodeDetailPage };

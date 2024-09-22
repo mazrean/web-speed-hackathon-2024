@@ -4,7 +4,6 @@ import { PostEpisodeRequestBodySchema } from '@wsh-2024/schema/src/api/episodes/
 import { PostEpisodeResponseSchema } from '@wsh-2024/schema/src/api/episodes/PostEpisodeResponse';
 
 import { setBookEditDate } from '../../../cache/book';
-import { setEpisodeEditDate } from '../../../cache/episode';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { episodeRepository } from '../../../repositories';
 
@@ -44,7 +43,6 @@ app.openapi(route, async (c) => {
     throw res.error;
   }
   setBookEditDate(body.bookId, new Date());
-  setEpisodeEditDate(res.value.id, new Date());
   return c.json(res.value);
 });
 
