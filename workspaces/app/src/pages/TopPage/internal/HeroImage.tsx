@@ -20,7 +20,7 @@ export const HeroImage: React.FC = () => {
         height: 576,
         imageId: '9e4ad110-bced-41f7-a2d8-11a2f12a5b91',
         width: 1024,
-      })} width={1024} />
+      })} />
     </_Wrapper>
   );
 };
