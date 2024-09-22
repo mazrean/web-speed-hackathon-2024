@@ -3,6 +3,7 @@ import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { PostEpisodePageRequestBodySchema } from '@wsh-2024/schema/src/api/episodePages/PostEpisodePageRequestBody';
 import { PostEpisodePageResponseSchema } from '@wsh-2024/schema/src/api/episodePages/PostEpisodePageResponse';
 
+import { setEpisodeEditDate } from '../../../cache/episode';
 import { authMiddleware } from '../../../middlewares/authMiddleware';
 import { episodePageRepository } from '../../../repositories';
 
@@ -41,6 +42,7 @@ app.openapi(route, async (c) => {
   if (res.isErr()) {
     throw res.error;
   }
+  setEpisodeEditDate(body.episodeId ?? '', new Date());
   return c.json(res.value);
 });
 

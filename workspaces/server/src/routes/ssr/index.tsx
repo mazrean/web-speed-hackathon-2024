@@ -19,7 +19,8 @@ import { getDayOfWeekStr } from '@wsh-2024/app/src/lib/date/getDayOfWeekStr';
 import type { RouterProp } from '@wsh-2024/app/src/routes';
 
 import { getAuthorEditDate, setAuthorEditDate } from '../../cache/author';
-import { getBookEditDate } from '../../cache/book';
+import { getBookEditDate, setBookEditDate } from '../../cache/book';
+import { getEpisodeEditDate, setEpisodeEditDate } from '../../cache/episode';
 import { INDEX_HTML_PATH } from '../../constants/paths';
 
 const app = new Hono();
@@ -60,6 +61,21 @@ async function createBookDetailData(bookId: string) {
     bookDetailPage: {
       book,
       episodeList,
+    },
+  } as RouterProp;
+}
+
+async function createEpisodeDetailData(episodeId: string, bookId: string) {
+  const [episode, episodes] = await Promise.all([
+    episodeApiClient.fetch({ params: { episodeId } }),
+    episodeApiClient.fetchList({ query: { bookId } }),
+  ]);
+
+  return {
+    episodeDetailPage: {
+      bookId,
+      episode,
+      episodes,
     },
   } as RouterProp;
 }
@@ -168,7 +184,54 @@ app.get('/books/:bookId',
     if (bookEditDate) {
       c.header('Last-Modified', bookEditDate.toUTCString());
     } else {
-      setAuthorEditDate(bookId, new Date());
+      setBookEditDate(bookId, new Date());
+      c.header('Last-Modified', new Date().toUTCString());
+    }
+
+    return c.html(html);
+  } catch (cause) {
+    throw new HTTPException(500, { cause, message: 'SSR error.' });
+  } finally {
+    sheet.seal();
+  }
+});
+
+app.get('/books/:bookId/episodes/:episodeId',
+  zValidator(
+    'param',
+    z.object({
+      bookId: z.string(),
+      episodeId: z.string(),
+    }),
+  ), async (c) => {
+  const { bookId, episodeId } = c.req.valid('param');
+
+  const ifModifiedSince = c.req.header('If-Modified-Since');
+  const episodeEditDate = getEpisodeEditDate(episodeId);
+  if (ifModifiedSince && episodeEditDate && new Date(ifModifiedSince).getTime() >= episodeEditDate.getTime()) {
+    return c.status(304);
+  }
+
+  const data = await createEpisodeDetailData(episodeId, bookId);
+  const sheet = new ServerStyleSheet();
+
+  try {
+    const body = ReactDOMServer.renderToString(
+      sheet.collectStyles(
+        <StaticRouter location={c.req.path}>
+          <ClientApp data={data} />
+        </StaticRouter>,
+      ),
+    );
+
+    const styleTags = sheet.getStyleTags();
+    const html = await createHTML({ body, data, styleTags });
+
+    c.header('Cache-Control', 'public, max-age=3600');
+    if (episodeEditDate) {
+      c.header('Last-Modified', episodeEditDate.toUTCString());
+    } else {
+      setEpisodeEditDate(episodeId, new Date());
       c.header('Last-Modified', new Date().toUTCString());
     }
 
