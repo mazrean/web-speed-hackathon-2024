@@ -12,6 +12,7 @@ import { AuthorDetailPage } from './pages/AuthorDetailPage';
 import type { AuthorDetailPageProp } from './pages/AuthorDetailPage';
 import type { BookDetailPageProp } from './pages/BookDetailPage';
 import { BookDetailPage } from './pages/BookDetailPage';
+import type { EpisodeDetailPageProp } from './pages/EpisodeDetailPage';
 import { EpisodeDetailPage } from './pages/EpisodeDetailPage';
 import { SearchPage } from './pages/SearchPage';
 import type { TopPageProp } from './pages/TopPage';
@@ -29,6 +30,7 @@ const _BackToTopButton = styled(Link)`
 export type RouterProp = {
   authorDetailPage?: AuthorDetailPageProp;
   bookDetailPage?: BookDetailPageProp;
+  episodeDetailPage?: EpisodeDetailPageProp;
   topPage?: TopPageProp;
 };
 
@@ -56,7 +58,7 @@ export const Router: React.FC<{
         path={'/'}
       >
         <Route element={data.bookDetailPage ? <BookDetailPage data={data.bookDetailPage} /> : null} path={'books/:bookId'} />
-        <Route element={<EpisodeDetailPage />} path={'books/:bookId/episodes/:episodeId'} />
+        <Route element={data.episodeDetailPage ? <EpisodeDetailPage {...data.episodeDetailPage} /> : null} path={'books/:bookId/episodes/:episodeId'} />
         <Route element={data.authorDetailPage ? <AuthorDetailPage data={data.authorDetailPage} /> : null} path={'authors/:authorId'} />
         <Route element={<SearchPage />} path={'search'} />
       </Route>
