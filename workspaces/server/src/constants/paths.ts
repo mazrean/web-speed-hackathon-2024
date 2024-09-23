@@ -14,6 +14,8 @@ export const IMAGES_PATH = path.resolve(PACKAGE_DIR, './dist/images');
 
 export const TEXT_PATH = path.resolve(PACKAGE_DIR, './dist/text');
 
+export const LOADABLE_STAT_PATH = path.resolve(PACKAGE_DIR, './dist/loadable-stats.json');
+
 export const CLIENT_STATIC_PATH = path.resolve(WORKSPACE_DIR, './workspaces/client/dist');
 
 export const INDEX_HTML_PATH = path.resolve(PACKAGE_DIR, './index.html');

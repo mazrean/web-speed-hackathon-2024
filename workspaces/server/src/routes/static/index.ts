@@ -10,18 +10,18 @@ const app = new Hono();
 
 app.use(
   '*',
+  immutableCacheControlMiddleware,
   serveStatic({
     root: path.relative(process.cwd(), CLIENT_STATIC_PATH),
   }),
-  immutableCacheControlMiddleware,
 );
 app.use(
   '/text/*',
+  immutableCacheControlMiddleware,
   serveStatic({
     rewriteRequestPath: (requestPath) => requestPath.replace(/^\/text/, ''),
     root: path.relative(process.cwd(), TEXT_PATH),
   }),
-  immutableCacheControlMiddleware,
 );
 
 export { app as staticApp };

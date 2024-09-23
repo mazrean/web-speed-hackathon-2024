@@ -1,6 +1,8 @@
 import { swaggerUI } from '@hono/swagger-ui';
 import { OpenAPIHono } from '@hono/zod-openapi';
 
+import { cacheControlMiddleware } from '../../middlewares/cacheControlMiddleware';
+
 import { authApp } from './auth';
 import { authorApp } from './authors';
 import { bookApp } from './books';
@@ -27,6 +29,8 @@ app.get(
     url: '/api/v1/specification',
   }),
 );
+
+app.use('/api/*', cacheControlMiddleware);
 
 app.route('/', authorApp);
 app.route('/', episodeApp);

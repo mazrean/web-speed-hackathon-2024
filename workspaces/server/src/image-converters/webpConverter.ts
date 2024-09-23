@@ -29,7 +29,10 @@ export const webpConverter: ConverterInterface = {
         width: data.width,
       },
     })
-      .webp({ effort: 6 })
+      .webp({
+        effort: 6,
+        quality: 20,
+      })
       .toBuffer();
   },
 };

@@ -65,28 +65,39 @@ async function createBookDetailData(bookId: string) {
 }
 
 async function createHTML({
-  body,
   data,
-  styleTags,
+  requestPath,
 }: {
-  body: string;
   data: RouterProp;
-  styleTags: string;
+  requestPath: string;
 }): Promise<string> {
+  const sheet = new ServerStyleSheet();
+
+  const body = ReactDOMServer.renderToString(
+    sheet.collectStyles(
+      <StaticRouter location={requestPath}>
+        <ClientApp data={data} />
+      </StaticRouter>,
+    ),
+  );
+
   const htmlContent = await fs.readFile(INDEX_HTML_PATH, 'utf-8');
 
   const content = htmlContent
     .replaceAll('<div id="root"></div>', `<div id="root">${body}</div>`)
-    .replaceAll('<style id="tag"></style>', styleTags)
+    .replaceAll('<style id="tag"></style>', sheet.getStyleTags())
     .replaceAll(
       '<script id="inject-data"></script>',
       `<script id="inject-data">
         window.__INITIAL_DATA__ = ${JSON.stringify(data).replace(/</g, '\\u003c')}
       </script>`,
     );
+  
+  sheet.seal();
 
   return content;
 }
+
 
 app.get('/authors/:authorId',
   zValidator(
@@ -104,19 +115,9 @@ app.get('/authors/:authorId',
   }
 
   const data = await createAuthorDetailData(authorId);
-  const sheet = new ServerStyleSheet();
 
   try {
-    const body = ReactDOMServer.renderToString(
-      sheet.collectStyles(
-        <StaticRouter location={c.req.path}>
-          <ClientApp data={data} />
-        </StaticRouter>,
-      ),
-    );
-
-    const styleTags = sheet.getStyleTags();
-    const html = await createHTML({ body, data, styleTags });
+    const html = await createHTML({ data, requestPath: c.req.path });
 
     c.header('Cache-Control', 'public, max-age=3600');
     if (authorEditDate) {
@@ -129,8 +130,6 @@ app.get('/authors/:authorId',
     return c.html(html);
   } catch (cause) {
     throw new HTTPException(500, { cause, message: 'SSR error.' });
-  } finally {
-    sheet.seal();
   }
 });
 
@@ -150,19 +149,9 @@ app.get('/books/:bookId',
   }
 
   const data = await createBookDetailData(bookId);
-  const sheet = new ServerStyleSheet();
 
   try {
-    const body = ReactDOMServer.renderToString(
-      sheet.collectStyles(
-        <StaticRouter location={c.req.path}>
-          <ClientApp data={data} />
-        </StaticRouter>,
-      ),
-    );
-
-    const styleTags = sheet.getStyleTags();
-    const html = await createHTML({ body, data, styleTags });
+    const html = await createHTML({ data, requestPath: c.req.path });
 
     c.header('Cache-Control', 'public, max-age=3600');
     if (bookEditDate) {
@@ -175,8 +164,6 @@ app.get('/books/:bookId',
     return c.html(html);
   } catch (cause) {
     throw new HTTPException(500, { cause, message: 'SSR error.' });
-  } finally {
-    sheet.seal();
   }
 });
 
@@ -199,25 +186,12 @@ app.get('*', async (c) => {
     break;
   }
 
-  const sheet = new ServerStyleSheet();
-
   try {
-    const body = ReactDOMServer.renderToString(
-      sheet.collectStyles(
-        <StaticRouter location={c.req.path}>
-          <ClientApp data={data} />
-        </StaticRouter>,
-      ),
-    );
-
-    const styleTags = sheet.getStyleTags();
-    const html = await createHTML({ body, data, styleTags });
+    const html = await createHTML({ data, requestPath: c.req.path });
 
     return c.html(html);
   } catch (cause) {
     throw new HTTPException(500, { cause, message: 'SSR error.' });
-  } finally {
-    sheet.seal();
   }
 });
 

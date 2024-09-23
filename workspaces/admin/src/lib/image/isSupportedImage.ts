@@ -1,26 +1,20 @@
 import { fileTypeFromBuffer } from 'file-type';
-import { Magika } from 'magika';
 
-const SUPPORTED_MAGIKA_LABEL_LIST = ['bmp', 'jpeg', 'png', 'webp'];
 const SUPPORTED_MIME_TYPE_LIST = ['image/bmp', 'image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/jxl'];
-
-const magika = new Magika();
-
-const initMagikaPromise = magika.load({
-  configURL: '/assets/magika/config.json',
-  modelURL: '/assets/magika/model.json',
-});
+const SUPPORTED_EXTENSION_LIST = ['bmp', 'jpeg', 'jpg', 'png', 'webp', 'avif', 'jxl'];
 
 export async function isSupportedImage(image: File): Promise<boolean> {
-  await initMagikaPromise;
-  const prediction = await magika.identifyBytes(new Uint8Array(await image.arrayBuffer()));
+  // ファイルタイプを取得
+  const fileType = await fileTypeFromBuffer(await image.arrayBuffer());
 
-  if (SUPPORTED_MAGIKA_LABEL_LIST.includes(prediction.label)) {
+  // MIMEタイプがサポートされているかをチェック
+  if (SUPPORTED_MIME_TYPE_LIST.includes(fileType?.mime ?? '')) {
     return true;
   }
 
-  const fileType = await fileTypeFromBuffer(await image.arrayBuffer());
-  if (SUPPORTED_MIME_TYPE_LIST.includes(fileType?.mime ?? '')) {
+  // 拡張子をファイル名から抽出してチェック
+  const fileExtension = image.name.split('.').pop()?.toLowerCase();
+  if (fileExtension && SUPPORTED_EXTENSION_LIST.includes(fileExtension)) {
     return true;
   }
 

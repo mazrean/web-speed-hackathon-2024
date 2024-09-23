@@ -17,7 +17,6 @@ export default defineConfig(async (): Promise<Options[]> => {
       entry: {
         admin: path.resolve(PACKAGE_DIR, './src/admin.tsx'),
         client: path.resolve(PACKAGE_DIR, './src/index.tsx'),
-        serviceworker: path.resolve(PACKAGE_DIR, './src/serviceworker/index.ts'),
       },
       env: {
         API_URL: '',
@@ -41,17 +40,27 @@ export default defineConfig(async (): Promise<Options[]> => {
           },
         }),
       ],
-      format: 'iife',
+      format: 'esm',
       loader: {
         '.json?file': 'file',
         '.wasm': 'binary',
       },
       metafile: true,
-      minify: true,
+      minify: 'terser',
+      noExternal: [/.*/],
       outDir: OUTPUT_DIR,
+      outExtension: ({ format }) => ({
+        js: format === 'esm' ? '.mjs' : '.js',
+      }),
       platform: 'browser',
       shims: false,
+      splitting: false,
       target: ['chrome128'],
+      terserOptions: {
+        compress: {
+          passes: 10,
+        },
+      },
       treeshake: true,
     },
   ];
