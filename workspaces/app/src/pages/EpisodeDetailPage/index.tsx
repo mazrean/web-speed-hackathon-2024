@@ -10,6 +10,12 @@ export type EpisodeDetailPageProp = {
   bookId: string;
   episode: {
     id: string;
+    pages: {
+      id: string;
+      image: {
+        id: string;
+      };
+    }[];
   };
   episodes: {
     chapter: number;
@@ -26,7 +32,7 @@ const EpisodeDetailPage: React.FC<EpisodeDetailPageProp> = ({bookId, episode, ep
   return (
     <Box>
       <section aria-label="漫画ビューアー">
-        <ComicViewer episodeId={episode.id} />
+        <ComicViewer episode={episode} />
       </section>
 
       <Separator />

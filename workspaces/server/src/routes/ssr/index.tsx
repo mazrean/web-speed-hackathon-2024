@@ -180,8 +180,6 @@ app.get('/books/:bookId',
     return c.html(html);
   } catch (cause) {
     throw new HTTPException(500, { cause, message: 'SSR error.' });
-  } finally {
-    sheet.seal();
   }
 });
 
@@ -202,19 +200,9 @@ app.get('/books/:bookId/episodes/:episodeId',
   }
 
   const data = await createEpisodeDetailData(episodeId, bookId);
-  const sheet = new ServerStyleSheet();
 
   try {
-    const body = ReactDOMServer.renderToString(
-      sheet.collectStyles(
-        <StaticRouter location={c.req.path}>
-          <ClientApp data={data} />
-        </StaticRouter>,
-      ),
-    );
-
-    const styleTags = sheet.getStyleTags();
-    const html = await createHTML({ body, data, styleTags });
+    const html = await createHTML({ data, requestPath: c.req.path });
 
     c.header('Cache-Control', 'public, max-age=3600');
     if (episodeEditDate) {

@@ -8,7 +8,7 @@ import { getImageUrl } from '../../../lib/image/getImageUrl';
 
 const _Canvas = styled.canvas`
   height: 100%;
-  width: auto;
+  width: 100%;
   flex-grow: 0;
   flex-shrink: 0;
 `;

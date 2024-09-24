@@ -1,92 +1,42 @@
-import { Suspense, useEffect, useState } from 'react';
-import { useInterval, useUpdate } from 'react-use';
+import { type PointerEvent, Suspense, useCallback, useState } from 'react';
 import styled from 'styled-components';
-
-import { addUnitIfNeeded } from '../../../lib/css/addUnitIfNeeded';
-import { useEpisode } from '../../episode/hooks/useEpisode';
 
 import { ComicViewerPage } from './ComicViewerPage';
 
 const IMAGE_WIDTH = 1075;
 const IMAGE_HEIGHT = 1518;
 
-/** スクロールスナップで適切な位置になるための X 軸の移動距離を計算する */
-function getScrollToLeft({
-  pageCountParView,
-  pageWidth,
-  scrollView,
-}: {
-  pageCountParView: number;
-  pageWidth: number;
-  scrollView: HTMLDivElement;
-}) {
-  const scrollViewClientRect = scrollView.getBoundingClientRect();
-  const scrollViewCenterX = (scrollViewClientRect.left + scrollViewClientRect.right) / 2;
-
-  const children = [...scrollView.children] as HTMLDivElement[];
-
-  let scrollToLeft = Number.MAX_SAFE_INTEGER;
-
-  // 画面に表示されているページの中心と、スクロールビューの中心との差分を計算する
-  // 世界は我々の想像する以上に変化するため、2 ** 12 回繰り返し観測する
-  for (let times = 0; times < 2 ** 12; times++) {
-    for (const [idx, child] of children.entries()) {
-      const nthChild = idx + 1;
-      const elementClientRect = child.getBoundingClientRect();
-
-      // 見開き2ページの場合は、scroll-margin で表示領域にサイズを合わせる
-      const scrollMargin =
-        pageCountParView === 2
-          ? {
-              // 奇数ページのときは左側に1ページ分の幅を追加する
-              left: nthChild % 2 === 0 ? pageWidth : 0,
-              // 偶数ページのときは右側に1ページ分の幅を追加する
-              right: nthChild % 2 === 1 ? pageWidth : 0,
-            }
-          : { left: 0, right: 0 };
-
-      // scroll-margin の分だけ広げた範囲を計算する
-      const areaClientRect = {
-        bottom: elementClientRect.bottom,
-        left: elementClientRect.left - scrollMargin.left,
-        right: elementClientRect.right + scrollMargin.right,
-        top: elementClientRect.top,
-      };
-
-      const areaCenterX = (areaClientRect.left + areaClientRect.right) / 2;
-      // ページの中心をスクロールビューの中心に合わせるための移動距離
-      const candidateScrollToLeft = areaCenterX - scrollViewCenterX;
-
-      // もっともスクロール量の少ないものを選ぶ
-      if (Math.abs(candidateScrollToLeft) < Math.abs(scrollToLeft)) {
-        scrollToLeft = candidateScrollToLeft;
-      }
-    }
-  }
-
-  return scrollToLeft;
-}
-
 const _Container = styled.div`
   position: relative;
+  overflow: hidden;
+  container-type: size;
 `;
 
-const _Wrapper = styled.div<{
-  $paddingInline: number;
-  $pageWidth: number;
-}>`
+const _Wrapper = styled.div`
   background-color: black;
+
+  display: grid;
+  grid-auto-flow: column;
+  width: ${IMAGE_WIDTH * 200 / IMAGE_HEIGHT}cqh;
+  grid-auto-columns: ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh;
+  @container (width > ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh) {
+    padding-inline: calc(50cqw - ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh);
+    scroll-padding: calc(50cqw - ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh);
+  }
+  @container (width <= ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh) {
+    padding-inline: calc(50cqw - ${IMAGE_WIDTH * 50 / IMAGE_HEIGHT}cqh);
+    scroll-padding: calc(50cqw - ${IMAGE_WIDTH * 50 / IMAGE_HEIGHT}cqh);
+  }
+
+  scroll-snap-type: x mandatory;
   cursor: grab;
   direction: rtl;
-  display: grid;
-  grid-auto-columns: ${({ $pageWidth }) => addUnitIfNeeded($pageWidth)};
-  grid-auto-flow: column;
-  grid-template-rows: minmax(auto, 100%);
+  scroll-behavior: smooth;
+
   height: 100%;
   overflow-x: scroll;
   overflow-y: hidden;
   overscroll-behavior: none;
-  padding-inline: ${({ $paddingInline }) => addUnitIfNeeded($paddingInline)};
   touch-action: none;
 
   &::-webkit-scrollbar {
@@ -94,136 +44,88 @@ const _Wrapper = styled.div<{
   }
 `;
 
+const _PaddingPage = styled.div`
+  height: 100%;
+  width: 100%;
+  scroll-snap-align: start;
+  @container (width <= ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh) {
+    display: none;
+  }
+`;
+
+const _Page = styled.div<{
+  even: boolean;
+}>`
+  height: 100%;
+  width: 100%;
+
+  @container (width > ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh) {
+    scroll-snap-align: ${({ even }) => even ? 'start' : 'none'};
+  }
+  @container (width <= ${IMAGE_WIDTH * 100 / IMAGE_HEIGHT}cqh) {
+    scroll-snap-align: start;
+  }
+`;
+
 type Props = {
-  episodeId: string;
+  episode: {
+    id: string;
+    pages: {
+      id: string;
+      image: {
+        id: string;
+      };
+    }[];
+  };
 };
 
-const ComicViewerCore: React.FC<Props> = ({ episodeId }) => {
-  // 画面のリサイズに合わせて再描画する
-  const rerender = useUpdate();
-  useInterval(rerender, 0);
+const ComicViewerCore: React.FC<Props> = ({ episode }) => {
+  const [isPressed, setIsPressed] = useState(false);
 
-  const { data: episode } = useEpisode({ params: { episodeId } });
+  const handlePointerDown = useCallback((ev: PointerEvent) => {
+    const scrollView = ev.currentTarget as HTMLDivElement;
+    scrollView.setPointerCapture(ev.pointerId);
+    setIsPressed(true);
+  }, []);
 
-  const [container, containerRef] = useState<HTMLDivElement | null>(null);
-  const [scrollView, scrollViewRef] = useState<HTMLDivElement | null>(null);
-
-  // コンテナの幅
-  const cqw = (container?.getBoundingClientRect().width ?? 0) / 100;
-  // コンテナの高さ
-  const cqh = (container?.getBoundingClientRect().height ?? 0) / 100;
-
-  // 1画面に表示できるページ数（1 or 2）
-  const pageCountParView = (100 * cqw) / (100 * cqh) < (2 * IMAGE_WIDTH) / IMAGE_HEIGHT ? 1 : 2;
-  // ページの幅
-  const pageWidth = ((100 * cqh) / IMAGE_HEIGHT) * IMAGE_WIDTH;
-  // 画面にページを表示したときに余る左右の余白
-  const viewerPaddingInline =
-    (100 * cqw - pageWidth * pageCountParView) / 2 +
-    // 2ページ表示のときは、奇数ページが左側にあるべきなので、ページの最初と最後に1ページの余白をいれる
-    (pageCountParView === 2 ? pageWidth : 0);
-
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    let isPressed = false;
-    let scrollToLeftWhenScrollEnd = 0;
-
-    const handlePointerDown = (ev: PointerEvent) => {
+  const handlePointerMove = useCallback((ev: PointerEvent) => {
+    if (isPressed) {
       const scrollView = ev.currentTarget as HTMLDivElement;
-      isPressed = true;
-      scrollView.style.cursor = 'grabbing';
-      scrollView.setPointerCapture(ev.pointerId);
-      scrollToLeftWhenScrollEnd = getScrollToLeft({ pageCountParView, pageWidth, scrollView });
-    };
+      scrollView.scrollBy({
+        behavior: 'instant',
+        left: -ev.movementX,
+      });
+    }
+  }, [isPressed]);
 
-    const handlePointerMove = (ev: PointerEvent) => {
-      if (isPressed) {
-        const scrollView = ev.currentTarget as HTMLDivElement;
-        scrollView.scrollBy({
-          behavior: 'instant',
-          left: -1 * ev.movementX,
-        });
-        scrollToLeftWhenScrollEnd = getScrollToLeft({ pageCountParView, pageWidth, scrollView });
-      }
-    };
-
-    const handlePointerUp = (ev: PointerEvent) => {
-      const scrollView = ev.currentTarget as HTMLDivElement;
-      isPressed = false;
-      scrollView.style.cursor = 'grab';
-      scrollView.releasePointerCapture(ev.pointerId);
-      scrollToLeftWhenScrollEnd = getScrollToLeft({ pageCountParView, pageWidth, scrollView });
-    };
-
-    const handleScroll = (ev: Pick<Event, 'currentTarget'>) => {
-      const scrollView = ev.currentTarget as HTMLDivElement;
-      scrollToLeftWhenScrollEnd = getScrollToLeft({ pageCountParView, pageWidth, scrollView });
-    };
-
-    let scrollEndTimer = -1;
-    abortController.signal.addEventListener('abort', () => window.clearTimeout(scrollEndTimer), { once: true });
-
-    const handleScrollEnd = (ev: Pick<Event, 'currentTarget'>) => {
-      const scrollView = ev.currentTarget as HTMLDivElement;
-
-      // マウスが離されるまではスクロール中とみなす
-      if (isPressed) {
-        scrollEndTimer = window.setTimeout(() => handleScrollEnd({ currentTarget: scrollView }), 0);
-        return;
-      } else {
-        scrollView.scrollBy({
-          behavior: 'smooth',
-          left: scrollToLeftWhenScrollEnd,
-        });
-      }
-    };
-
-    let prevContentRect: DOMRectReadOnly | null = null;
-    const handleResize = (entries: ResizeObserverEntry[]) => {
-      if (prevContentRect != null && prevContentRect.width !== entries[0]?.contentRect.width) {
-        requestAnimationFrame(() => {
-          scrollView?.scrollBy({
-            behavior: 'instant',
-            left: getScrollToLeft({ pageCountParView, pageWidth, scrollView }),
-          });
-        });
-      }
-      prevContentRect = entries[0]?.contentRect ?? null;
-    };
-
-    scrollView?.addEventListener('pointerdown', handlePointerDown, { passive: false, signal: abortController.signal });
-    scrollView?.addEventListener('pointermove', handlePointerMove, { passive: false, signal: abortController.signal });
-    scrollView?.addEventListener('pointerup', handlePointerUp, { passive: false, signal: abortController.signal });
-    scrollView?.addEventListener('scroll', handleScroll, { passive: false, signal: abortController.signal });
-    scrollView?.addEventListener('scrollend', handleScrollEnd, { passive: false, signal: abortController.signal });
-
-    const resizeObserver = new ResizeObserver(handleResize);
-    scrollView && resizeObserver.observe(scrollView);
-    abortController.signal.addEventListener('abort', () => resizeObserver.disconnect(), { once: true });
-
-    return () => {
-      abortController.abort();
-    };
-  }, [pageCountParView, pageWidth, scrollView]);
+  const handlePointerUp = useCallback((ev: PointerEvent) => {
+    const scrollView = ev.currentTarget as HTMLDivElement;
+    scrollView.releasePointerCapture(ev.pointerId);
+    setIsPressed(false);
+  }, []);
 
   return (
-    <_Container ref={containerRef}>
-      <_Wrapper ref={scrollViewRef} $paddingInline={viewerPaddingInline} $pageWidth={pageWidth}>
-        {episode.pages.map((page) => {
-          return <ComicViewerPage key={page.id} pageImageId={page.image.id} />;
+    <_Container>
+      <_Wrapper
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        style={{cursor: isPressed? "grabbing" : 'grab', scrollSnapType: isPressed? 'none' : 'x mandatory'}}
+        >
+        <_PaddingPage />
+        {episode.pages.map((page, idx) => {
+          return (
+            <_Page key={page.id} even={idx%2 === 1}>
+              <Suspense fallback={null}>
+                <ComicViewerPage pageImageId={page.image.id} />
+              </Suspense>
+            </_Page>
+          );
         })}
+        <_PaddingPage />
       </_Wrapper>
     </_Container>
   );
 };
 
-const ComicViewerCoreWithSuspense: React.FC<Props> = ({ episodeId }) => {
-  return (
-    <Suspense fallback={null}>
-      <ComicViewerCore episodeId={episodeId} />
-    </Suspense>
-  );
-};
-
-export { ComicViewerCoreWithSuspense as ComicViewerCore };
+export { ComicViewerCore };
