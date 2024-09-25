@@ -112,7 +112,7 @@ const ComicViewerCore: React.FC<Props> = ({ episode }) => {
         onPointerUp={handlePointerUp}
         style={{cursor: isPressed? "grabbing" : 'grab', scrollSnapType: isPressed? 'none' : 'x mandatory'}}
         >
-        <_PaddingPage />
+        <_Page even={true} />
         {episode.pages.map((page, idx) => {
           return (
             <_Page key={page.id} even={idx%2 === 1}>

@@ -1,5 +1,4 @@
-import { useRef } from 'react';
-import { useAsync } from 'react-use';
+import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 import { decrypt } from '@wsh-2024/image-encrypt/src/decrypt';
@@ -20,29 +19,37 @@ type Props = {
 export const ComicViewerPage = ({ pageImageId }: Props) => {
   const ref = useRef<HTMLCanvasElement>(null);
 
-  useAsync(async () => {
-    const image = new Image();
-    image.src = getImageUrl({
-      format: 'webp',
-      imageId: pageImageId,
+  useEffect(() => {
+    const observer = new IntersectionObserver(async ([entry]) => {
+      if (!entry || !entry.isIntersecting) return;
+
+      const image = new Image();
+      image.src = getImageUrl({
+        format: 'webp',
+        imageId: pageImageId,
+      });
+      await image.decode();
+
+      const canvas = ref.current!;
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext('2d')!;
+
+      decrypt({
+        exportCanvasContext: ctx,
+        sourceImage: image,
+        sourceImageInfo: {
+          height: image.naturalHeight,
+          width: image.naturalWidth,
+        },
+      });
+
+      canvas.setAttribute('role', 'img');
     });
-    await image.decode();
 
-    const canvas = ref.current!;
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const ctx = canvas.getContext('2d')!;
+    observer.observe(ref.current!);
 
-    decrypt({
-      exportCanvasContext: ctx,
-      sourceImage: image,
-      sourceImageInfo: {
-        height: image.naturalHeight,
-        width: image.naturalWidth,
-      },
-    });
-
-    canvas.setAttribute('role', 'img');
+    return () => observer.disconnect();
   }, [pageImageId]);
 
   return <_Canvas ref={ref} />;

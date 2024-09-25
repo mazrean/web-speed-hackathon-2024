@@ -1,5 +1,4 @@
 import React from 'react';
-import { useBoolean, useMount } from 'react-use';
 import styled from 'styled-components';
 
 const _Spacer = styled.div<{ $height?: number; $width?: number }>`
@@ -14,12 +13,4 @@ type Props = {
   width?: number;
 };
 
-export const Spacer: React.FC<Props> = ({ height, width }) => {
-  const [mounted, toggleMounted] = useBoolean(false);
-
-  useMount(() => {
-    toggleMounted();
-  });
-
-  return mounted ? <_Spacer $height={height} $width={width} /> : null;
-};
+export const Spacer: React.FC<Props> = ({ height, width }) => <_Spacer $height={height} $width={width} />;
